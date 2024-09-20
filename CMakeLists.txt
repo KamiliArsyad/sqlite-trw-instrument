@@ -9,6 +9,6 @@ add_executable(sqlite_rw_instrument
     shell.c
     sqlite3.c)
 
-add_definitions(-DSQLITE_DEBUG)
+add_definitions(-DSQLITE_DEBUG -DSQLITE_TRW_INSTRUMENT)
 
 target_link_libraries(sqlite_rw_instrument pthread dl)

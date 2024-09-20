@@ -3,6 +3,7 @@
 .open ../tests/mydatabase.db
 
 -- Create a simple table named 'employees'
+DROP TABLE IF EXISTS employees;
 CREATE TABLE IF NOT EXISTS employees (
                                          id INTEGER PRIMARY KEY,
                                          name TEXT NOT NULL,
@@ -10,7 +11,7 @@ CREATE TABLE IF NOT EXISTS employees (
                                          salary INTEGER NOT NULL
 );
 
-PRAGMA vdbe_trace = ON;
+-- PRAGMA vdbe_trace = ON;
 
 -- Start a transaction
 BEGIN TRANSACTION;
@@ -48,4 +49,4 @@ UPDATE employees SET salary = salary + 1000 WHERE department = 'Engineering';
 COMMIT;
 
 -- Query to see the final state of the table
-SELECT * FROM employees LIMIT 1;
+SELECT * FROM employees LIMIT 2;
