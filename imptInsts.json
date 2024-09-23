@@ -1,0 +1,3 @@
+{
+  "important": ["Transaction", "AutoCommit", "TableLock", "OpenWrite", "OpenRead", "Halt"]
+}
