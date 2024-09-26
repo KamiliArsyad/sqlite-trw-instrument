@@ -1,6 +1,6 @@
 -- This will create a new database in the specified directory
 -- It assumes the directory exists; SQLite will not create the directory
-.open ../tests/mydatabase.db
+.open ./tests/mydatabase.db
 
 -- Create a simple table named 'employees'
 DROP TABLE IF EXISTS employees;
