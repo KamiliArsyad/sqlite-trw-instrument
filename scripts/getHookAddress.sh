@@ -19,7 +19,7 @@ fi
 objdump -d "$binary_file" | awk -v func="$function_name" '
 BEGIN {
     # Prepare the regex pattern for call to the function
-    call_pattern = "call[[:space:]]+[^<]*<" func ">"
+    call_pattern = "call[q]?[[:space:]]+[^<]*<" func ">"
 }
 
 {
