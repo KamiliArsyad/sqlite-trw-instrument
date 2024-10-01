@@ -17,17 +17,27 @@ fi
 
 # Use objdump to disassemble the binary and process the output
 objdump -d "$binary_file" | awk -v func="$function_name" '
+BEGIN {
+    # Prepare the regex pattern for call to the function
+    call_pattern = "call[[:space:]]+[^<]*<" func ">"
+}
+
 {
     if (prev_line_matches) {
         # This is the line after the function call
-        if (match($0, /^[[:space:]]*([0-9a-f]+):/, m)) {
-            addr = "0x" m[1]
+        # Remove leading spaces
+        line = $0
+        sub(/^[[:space:]]*/, "", line)
+        # Extract the address from the line
+        if (match(line, /^([0-9a-f]+):/)) {
+            addr = "0x" substr(line, RSTART, RLENGTH - 1)  # Exclude the colon
             print addr ","
         }
         prev_line_matches = 0
     }
-    # Check if the line is a call to the specified function
-    if (match($0, /^[[:space:]]*([0-9a-f]+):.*call.*<'"$function_name"'>/)) {
+
+    # Check if the line contains a call to the specified function
+    if (match($0, call_pattern)) {
         prev_line_matches = 1
     }
 }
