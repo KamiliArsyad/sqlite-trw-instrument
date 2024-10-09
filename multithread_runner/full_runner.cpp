@@ -38,7 +38,8 @@ void execute_sql(sqlite3* db, const char* sql) {
 }
 
 // Thread task
-void thread_task(sqlite3* db) {
+void thread_task(sqlite3* db, const int thread_id) {
+    setThreadId(thread_id);
     execute_sql(db, task_sql);
 }
 
@@ -56,7 +57,7 @@ int main() {
     // Launch 10 threads to perform the task SQL
     std::vector<std::thread> threads;
     for (int i = 0; i < NUM_THREADS; ++i) {
-        threads.emplace_back(thread_task, db);
+        threads.emplace_back(thread_task, db, i);
     }
 
     // Join threads

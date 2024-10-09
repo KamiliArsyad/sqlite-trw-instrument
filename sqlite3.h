@@ -40,7 +40,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+#if defined(SQLITE_TRW_INSTRUMENT)
+void setThreadId(int threadId);
+#endif
 
 /*
 ** Facilitate override of interface linkage and calling conventions.
