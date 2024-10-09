@@ -8,7 +8,8 @@ include_directories(.)
 add_executable(sqlite_rw_instrument
     sqlite3.c
     shell.c
-    )
+        mvtracer.c
+)
 
 add_definitions(-DSQLITE_DEBUG -DSQLITE_TRW_INSTRUMENT)
 

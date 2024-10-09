@@ -9,7 +9,8 @@ include_directories(${CMAKE_SOURCE_DIR})
 
 find_package(Threads REQUIRED)
 
-add_executable(full_runner full_runner.cpp ${CMAKE_SOURCE_DIR}/sqlite3.c)
+add_executable(full_runner full_runner.cpp ${CMAKE_SOURCE_DIR}/sqlite3.c
+        ../mvtracer.c)
 
 add_definitions(-DSQLITE_DEBUG -DSQLITE_TRW_INSTRUMENT)
 
