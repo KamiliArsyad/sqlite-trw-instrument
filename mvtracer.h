@@ -1,5 +1,6 @@
 #ifndef MVTRACER_H
 #define MVTRACER_H
+#include <stdio.h>
 
 #endif //MVTRACER_H
 
@@ -52,10 +53,12 @@ TransactionOp *trackEnd(int transactionId);
 Value* createValue(const void* val, valToStringFunc func);
 
 /**
-* WARNING: This operation **REMOVES** the object in the input.
-* Prints a transaction and then destroy the transactionOp object.
-*/
-void printTransactionOp(TransactionOp* transactionOp);
+ * WARNING: This operation **REMOVES** the object in the input.
+ * Prints to `pOut` a transaction in the format:
+ * Op: <Operation> \t Tx: <Transaction> \t [obj: <Object ID>] [wVal: <write value>]
+ * After printing, it destroys the transactionOp object to prevent memory leaks.
+ */
+void printTransactionOp(TransactionOp* transactionOp, FILE *pOut);
 
 // ------------ Default ToString Functions ----------
 const char* intToString(const void* val);

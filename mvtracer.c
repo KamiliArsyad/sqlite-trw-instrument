@@ -77,7 +77,7 @@ TransactionOp *trackEnd(int transactionId)
     return createTransactionOp(COMMIT, transactionId, NULL, NULL);
 }
 
-void printTransactionOp(TransactionOp* transactionOp)
+void printTransactionOp(TransactionOp* transactionOp, FILE* pOut)
 {
     if (!transactionOp)
     {
@@ -110,22 +110,22 @@ void printTransactionOp(TransactionOp* transactionOp)
     static const char *writeFormat = " \t wVal: %s";
 
     // Print the transaction operation in a single line
-    printf(baseFormat, opTypeStr, transactionOp->transactionId);
+    fprintf(pOut, baseFormat, opTypeStr, transactionOp->transactionId);
 
     // Print object ID if it's not a BEGIN or COMMIT operation
     if (transactionOp->type == WRITE || transactionOp->type == READ)
     {
-        printf(objFormat, transactionOp->objectId);
+        fprintf(pOut, objFormat, transactionOp->objectId);
     }
 
     // Print write value if it's a WRITE operation
     if (transactionOp->type == WRITE && transactionOp->writeVal->func != NULL)
     {
         const char* valueStr = transactionOp->writeVal->func(transactionOp->writeVal->val);
-        printf(writeFormat, valueStr ? valueStr : "<NULL>");
+        fprintf(pOut, writeFormat, valueStr ? valueStr : "<NULL>");
     }
 
-    printf("\n");
+    fprintf(pOut, "\n");
 
     destroyTransactionOp(transactionOp);
 }
