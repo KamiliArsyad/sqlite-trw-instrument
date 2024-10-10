@@ -36,38 +36,45 @@ static TransactionOp* createTransactionOp(const OpType type, const int transacti
     transactionOp->type = type;
     transactionOp->transactionId = transactionId;
     transactionOp->objectId = objectId;
-    transactionOp->writeVal = writeVal == NULL ? NULL : *writeVal;
+    if (writeVal)
+    {
+        transactionOp->writeVal = writeVal;
+    }
 
     return transactionOp;
 }
-
-static TransactionOp* createTransactionOp(const OpType type, const int transactionId, const unsigned long objectId)
-{
-    return createTransactionOp(type, transactionId, objectId, createValue(NULL, NULL));
-}
-
 
 static void destroyTransactionOp(TransactionOp* transactionOp)
 {
     if (transactionOp)
     {
-        if (transactionOp->writeVal.val != NULL)
+        if (transactionOp->writeVal->val != NULL)
         {
-            destroyValue(&(transactionOp->writeVal));
+            destroyValue(transactionOp->writeVal);
         }
         free(transactionOp);
     }
 }
 
-// Public API
-TransactionOp* trackRead(const int transactionId, const unsigned long objectId)
+// ------------ PUBLIC API -----------------
+TransactionOp* trackRead(int transactionId, unsigned long objectId)
 {
-    return createTransactionOp(READ, transactionId, objectId);
+    return createTransactionOp(READ, transactionId, objectId, createValue(NULL, NULL));
 }
 
-TransactionOp* trackWrite(const int transactionId, const unsigned long objectId, const Value *value)
+TransactionOp* trackWrite(int transactionId, unsigned long objectId, Value *value)
 {
     return createTransactionOp(WRITE, transactionId, objectId, value);
+}
+
+TransactionOp *trackBegin(int transactionId)
+{
+    return createTransactionOp(BEGIN, transactionId, NULL, NULL);
+}
+
+TransactionOp *trackEnd(int transactionId)
+{
+    return createTransactionOp(COMMIT, transactionId, NULL, NULL);
 }
 
 void printTransactionOp(TransactionOp* transactionOp)
@@ -82,33 +89,43 @@ void printTransactionOp(TransactionOp* transactionOp)
     const char* opTypeStr = "UNKNOWN";
     switch (transactionOp->type)
     {
-        case BEGIN:
-            opTypeStr = "BEGIN";
-            break;
-        case COMMIT:
-            opTypeStr = "COMMIT";
-            break;
-        case WRITE:
-            opTypeStr = "WRITE";
-            break;
-        case READ:
-            opTypeStr = "READ";
-            break;
-        default:
-            break;
+    case BEGIN:
+        opTypeStr = "BEGIN";
+        break;
+    case COMMIT:
+        opTypeStr = "COMMIT";
+        break;
+    case WRITE:
+        opTypeStr = "WRITE";
+        break;
+    case READ:
+        opTypeStr = "READ";
+        break;
+    default:
+        break;
     }
 
-    printf("Transaction Operation:\n");
-    printf("  Type: %s\n", opTypeStr);
-    printf("  Transaction ID: %d\n", transactionOp->transactionId);
-    printf("  Object ID: %lu\n", transactionOp->objectId);
+    static const char *baseFormat = "Op: %s\t Tx: %d";
+    static const char *objFormat = "\t Obj: %lu";
+    static const char *writeFormat = " \t wVal: %s";
+
+    // Print the transaction operation in a single line
+    printf(baseFormat, opTypeStr, transactionOp->transactionId);
+
+    // Print object ID if it's not a BEGIN or COMMIT operation
+    if (transactionOp->type == WRITE || transactionOp->type == READ)
+    {
+        printf(objFormat, transactionOp->objectId);
+    }
 
     // Print write value if it's a WRITE operation
-    if (transactionOp->type == WRITE && transactionOp->writeVal.func != NULL)
+    if (transactionOp->type == WRITE && transactionOp->writeVal->func != NULL)
     {
-        const char* valueStr = transactionOp->writeVal.func(transactionOp->writeVal.val);
-        printf("  Write Value: %s\n", valueStr ? valueStr : "<NULL>");
+        const char* valueStr = transactionOp->writeVal->func(transactionOp->writeVal->val);
+        printf(writeFormat, valueStr ? valueStr : "<NULL>");
     }
+
+    printf("\n");
 
     destroyTransactionOp(transactionOp);
 }
