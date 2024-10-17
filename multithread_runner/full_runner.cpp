@@ -8,8 +8,9 @@
 #include <mutex>
 
 // Constants
-constexpr int NUM_THREADS = 10;
+constexpr int NUM_THREADS = 3;
 const std::string DB_FILENAME = "test.db";
+const std::string WAL_MODE = "PRAGMA journal_mode = WAL;"; // PRAGMA vdbe_trace = ON;";
 
 // Utility function to execute SQL commands with optional retry logic
 bool execute_sql(sqlite3* db, const std::string& sql, const bool use_callback = false, int retries = 1,
@@ -64,7 +65,7 @@ void initialize_database() {
     }
 
     // Enable WAL mode
-    if (!execute_sql(db, "PRAGMA journal_mode = WAL;")) {
+    if (!execute_sql(db, WAL_MODE)) {
         std::cerr << "Failed to enable WAL mode.\n";
         sqlite3_close(db);
         return;
@@ -181,6 +182,13 @@ void thread_function(TransactionType type, const int thread_id) {
     sqlite3* db;
     if (sqlite3_open(DB_FILENAME.c_str(), &db) != SQLITE_OK) {
         std::cerr << "Thread can't open database: " << sqlite3_errmsg(db) << "\n";
+        return;
+    }
+
+    // Enable WAL mode
+    if (!execute_sql(db, WAL_MODE)) {
+        std::cerr << "Failed to enable WAL mode.\n";
+        sqlite3_close(db);
         return;
     }
 
