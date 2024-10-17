@@ -106,7 +106,7 @@ void printTransactionOp(TransactionOp* transactionOp, FILE* pOut)
     }
 
     static const char *baseFormat = "Op: %s\t Tx: %d";
-    static const char *objFormat = "\t Obj: %lu";
+    static const char *objFormat = "\t Obj: %d";
     static const char *writeFormat = " \t wVal: %s";
 
     // Print the transaction operation in a single line
