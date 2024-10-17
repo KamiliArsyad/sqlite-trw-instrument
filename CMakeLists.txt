@@ -9,6 +9,8 @@ add_executable(sqlite_rw_instrument
     sqlite3.c
     shell.c
         mvtracer.c
+        sqlite3TraceAdapter.c
+        sqlite3_ext.h
 )
 
 add_definitions(-DSQLITE_DEBUG -DSQLITE_TRW_INSTRUMENT)

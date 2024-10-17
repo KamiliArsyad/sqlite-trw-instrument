@@ -42,6 +42,7 @@ extern "C" {
 #endif
 #if defined(SQLITE_TRW_INSTRUMENT)
 void setThreadId(int threadId);
+int getThreadId();
 #endif
 
 /*
