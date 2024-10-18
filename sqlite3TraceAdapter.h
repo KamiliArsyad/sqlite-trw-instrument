@@ -4,6 +4,11 @@
 #ifndef SQLITE3TRACEADAPTER_H
 #define SQLITE3TRACEADAPTER_H
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 // checkVdbeOP
 typedef const int (*vdbeOpCheckPredicate)(u8);
 
@@ -33,7 +38,8 @@ void sqlite3TraceInterceptor(VdbeOp *pOp);
 
 
 /**
-* Tracer state management struct.
+* Tracer state management struct. Mainly used for tracking
+* read operations since it involves multiple instructions.
 */
 typedef struct {
  // Current read operation.
@@ -50,5 +56,15 @@ TraceState* initTraceState();
 
 // Sets the rowId of the current state
 void setRowId(int rowId);
+
+// Intercepts write inside an "Insert" opcode
+void interceptWrite(VdbeOp *pOp, int recordId, char* val);
+
+// Enables trace output to stdout.
+void enableTraceOutput();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif //SQLITE3TRACEADAPTER_H

@@ -3,7 +3,8 @@
 #include <string.h>
 
 #define COLUMN_OP_NAME "Column"
-#define ROW_ID_OP_NAME "RowId"
+#define ROW_ID_OP_NAME "Rowid"
+#define AUTOCOMMIT_OP_NAME "AutoCommit"
 
 static const char* cursorOperations[9] = {
     "Next",
@@ -39,6 +40,11 @@ int isRowIdOp(u8 opCode)
     return strcmp(sqlite3OpcodeName(opCode), ROW_ID_OP_NAME) == 0;
 }
 
+int isAutocommitOp(u8 opCode)
+{
+    return strcmp(sqlite3OpcodeName(opCode), AUTOCOMMIT_OP_NAME) == 0;
+}
+
 int checkVdbeOp(VdbeOp *op, vdbeOpCheckPredicate predicate)
 {
     return predicate(op->opcode);
@@ -66,6 +72,7 @@ void freeTraceState(TraceState *traceState)
 // ------------------------------------------
 
 __thread TraceState *currentTraceState = NULL;
+FILE *traceFile = NULL;
 
 void sqlite3TraceInterceptor(VdbeOp *pOp)
 {
@@ -77,12 +84,12 @@ void sqlite3TraceInterceptor(VdbeOp *pOp)
 
         if (currentTraceState->readOp != NULL)
         {
-            printTransactionOp(currentTraceState->readOp, stdout);
+            printTransactionOp(currentTraceState->readOp, traceFile);
         }
 
         if (currentTraceState->writeOp != NULL)
         {
-            printTransactionOp(currentTraceState->writeOp, stdout);
+            printTransactionOp(currentTraceState->writeOp, traceFile);
         }
 
         freeTraceState(currentTraceState);
@@ -96,7 +103,23 @@ void sqlite3TraceInterceptor(VdbeOp *pOp)
         }
 
         currentTraceState->readOp = trackRead(getThreadId(), currentTraceState->rowId);
+    } else if (checkVdbeOp(pOp,isAutocommitOp))
+    {
+        // Autocommit flag false: Begin transaction
+        // Autocommit flag true: Commit transaction
+        if (pOp->p1)
+        {
+            printTransactionOp(trackEnd(getThreadId()), traceFile);
+        } else
+        {
+            printTransactionOp(trackBegin(getThreadId()), traceFile);
+        }
     }
+}
+
+void enableTraceOutput()
+{
+    traceFile = stdout;
 }
 
 void setRowId(int rowId)
@@ -107,4 +130,12 @@ void setRowId(int rowId)
     }
 
     currentTraceState->rowId = rowId;
+}
+
+void interceptWrite(VdbeOp *pOp, int recordId, char* val)
+{
+    if (pOp == NULL) return;
+
+    Value *newVal = createValue(val, stringToString);
+    printTransactionOp(trackWrite(getThreadId(), recordId, newVal), traceFile);
 }

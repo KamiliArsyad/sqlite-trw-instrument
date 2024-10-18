@@ -1,16 +1,18 @@
+#include <chrono>
+#include <cstdio> // For std::remove
 #include <iostream>
+#include <mutex>
+#include <sqlite3.h>
+#include <sqlite3TraceAdapter.h>
 #include <string>
 #include <thread>
 #include <vector>
-#include <sqlite3.h>
-#include <cstdio> // For std::remove
-#include <chrono>
-#include <mutex>
 
 // Constants
-constexpr int NUM_THREADS = 3;
+constexpr int NUM_THREADS = 10;
 const std::string DB_FILENAME = "test.db";
-const std::string WAL_MODE = "PRAGMA journal_mode = WAL;"; // PRAGMA vdbe_trace = ON;";
+const std::string WAL_MODE = "";// "PRAGMA journal_mode = WAL;"; // PRAGMA vdbe_trace = ON;";
+// const std::string WAL_MODE = "PRAGMA journal_mode = WAL; PRAGMA vdbe_trace = ON;";
 
 // Utility function to execute SQL commands with optional retry logic
 bool execute_sql(sqlite3* db, const std::string& sql, const bool use_callback = false, int retries = 1,
@@ -210,6 +212,7 @@ void thread_function(TransactionType type, const int thread_id) {
 
 int main() {
     initialize_database();
+    enableTraceOutput();
 
     // Create threads with different transaction types
     std::vector<std::thread> threads;

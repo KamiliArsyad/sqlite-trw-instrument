@@ -36,10 +36,7 @@ static TransactionOp* createTransactionOp(const OpType type, const int transacti
     transactionOp->type = type;
     transactionOp->transactionId = transactionId;
     transactionOp->objectId = objectId;
-    if (writeVal)
-    {
-        transactionOp->writeVal = writeVal;
-    }
+    transactionOp->writeVal = writeVal;
 
     return transactionOp;
 }
@@ -48,7 +45,8 @@ static void destroyTransactionOp(TransactionOp* transactionOp)
 {
     if (transactionOp)
     {
-        if (transactionOp->writeVal->val != NULL)
+        if (transactionOp->writeVal != NULL
+            && transactionOp->writeVal->val != NULL)
         {
             destroyValue(transactionOp->writeVal);
         }
@@ -82,6 +80,13 @@ void printTransactionOp(TransactionOp* transactionOp, FILE* pOut)
     if (!transactionOp)
     {
         printf("Invalid TransactionOp pointer.\n");
+        return;
+    }
+
+    if (!pOut)
+    {
+        // Nothing to print, just destroy.
+        destroyTransactionOp(transactionOp);
         return;
     }
 
