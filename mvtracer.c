@@ -110,27 +110,28 @@ void printTransactionOp(TransactionOp* transactionOp, FILE* pOut)
         break;
     }
 
-    static const char *baseFormat = "Op: %s\t Tx: %d";
+    static const char *baseFormat = "\n$$Op: %s\t Tx: %d";
     static const char *objFormat = "\t Obj: %d";
     static const char *writeFormat = " \t wVal: %s";
 
-    // Print the transaction operation in a single line
-    fprintf(pOut, baseFormat, opTypeStr, transactionOp->transactionId);
+    char formattedStr[512]; // Ensure it's large enough to fit the full string
+
+    int offset = snprintf(formattedStr, sizeof(formattedStr), baseFormat, opTypeStr, transactionOp->transactionId);
 
     // Print object ID if it's not a BEGIN or COMMIT operation
-    if (transactionOp->type == WRITE || transactionOp->type == READ)
-    {
-        fprintf(pOut, objFormat, transactionOp->objectId);
+    if (transactionOp->type == WRITE || transactionOp->type == READ) {
+        offset += snprintf(formattedStr + offset, sizeof(formattedStr) - offset, objFormat, transactionOp->objectId);
     }
 
     // Print write value if it's a WRITE operation
-    if (transactionOp->type == WRITE && transactionOp->writeVal->func != NULL)
-    {
+    if (transactionOp->type == WRITE && transactionOp->writeVal->func != NULL) {
         const char* valueStr = transactionOp->writeVal->func(transactionOp->writeVal->val);
-        fprintf(pOut, writeFormat, valueStr ? valueStr : "<NULL>");
+        offset += snprintf(formattedStr + offset, sizeof(formattedStr) - offset, writeFormat, valueStr ? valueStr : "<NULL>");
     }
 
-    fprintf(pOut, "\n");
+    // Finally, add the newline and write to output
+    snprintf(formattedStr + offset, sizeof(formattedStr) - offset, "$$\n");
+    fprintf(pOut, "%s", formattedStr);
 
     destroyTransactionOp(transactionOp);
 }

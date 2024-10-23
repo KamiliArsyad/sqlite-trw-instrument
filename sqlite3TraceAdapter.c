@@ -81,13 +81,14 @@ void sqlite3TraceInterceptor(VdbeOp *pOp)
     if (checkVdbeOp(pOp, isCursorMovement))
     {
         if (currentTraceState == NULL) return;
+        int p = currentTraceState->rowId != -1;
 
-        if (currentTraceState->readOp != NULL)
+        if (currentTraceState->readOp != NULL && p)
         {
             printTransactionOp(currentTraceState->readOp, traceFile);
         }
 
-        if (currentTraceState->writeOp != NULL)
+        if (currentTraceState->writeOp != NULL && p)
         {
             printTransactionOp(currentTraceState->writeOp, traceFile);
         }
