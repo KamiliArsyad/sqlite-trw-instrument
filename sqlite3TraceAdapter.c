@@ -5,6 +5,7 @@
 #define COLUMN_OP_NAME "Column"
 #define ROW_ID_OP_NAME "Rowid"
 #define AUTOCOMMIT_OP_NAME "AutoCommit"
+#define HALT_OP_NAME "Halt"
 
 static const char* cursorOperations[9] = {
     "Next",
@@ -45,6 +46,11 @@ int isAutocommitOp(u8 opCode)
     return strcmp(sqlite3OpcodeName(opCode), AUTOCOMMIT_OP_NAME) == 0;
 }
 
+int isHaltOp(u8 opCode)
+{
+    return strcmp(sqlite3OpcodeName(opCode), HALT_OP_NAME) == 0;
+}
+
 int checkVdbeOp(VdbeOp *op, vdbeOpCheckPredicate predicate)
 {
     return predicate(op->opcode);
@@ -72,9 +78,10 @@ void freeTraceState(TraceState *traceState)
 // ------------------------------------------
 
 __thread TraceState *currentTraceState = NULL;
+__thread int isStatementMode = 0;
 FILE *traceFile = NULL;
 
-void sqlite3TraceInterceptor(VdbeOp *pOp)
+void sqlite3TraceInterceptor(VdbeOp *pOp, int pc)
 {
     if (!pOp) return;
 
@@ -104,7 +111,8 @@ void sqlite3TraceInterceptor(VdbeOp *pOp)
         }
 
         currentTraceState->readOp = trackRead(getThreadId(), currentTraceState->rowId);
-    } else if (checkVdbeOp(pOp,isAutocommitOp))
+    } else if (!isStatementMode && checkVdbeOp(pOp,isAutocommitOp))
+        // Create mutually exclusive condition with isStatementMode
     {
         // Autocommit flag false: Begin transaction
         // Autocommit flag true: Commit transaction
@@ -112,6 +120,17 @@ void sqlite3TraceInterceptor(VdbeOp *pOp)
         {
             printTransactionOp(trackEnd(getThreadId()), traceFile);
         } else
+        {
+            printTransactionOp(trackBegin(getThreadId()), traceFile);
+        }
+    } else if (isStatementMode)
+    {
+        // If first time seen, begin transaction
+        // If Halt: Commit transaction.
+        if (checkVdbeOp(pOp, isHaltOp))
+        {
+            printTransactionOp(trackEnd(getThreadId()), traceFile);
+        } else if (pc == 0)
         {
             printTransactionOp(trackBegin(getThreadId()), traceFile);
         }
@@ -123,6 +142,11 @@ void enableTraceOutput()
     traceFile = stdout;
 }
 
+void setStatementMode(int mode)
+{
+    isStatementMode = mode != 0;
+}
+
 void setRowId(int rowId)
 {
     if (currentTraceState == NULL)
@@ -131,6 +155,16 @@ void setRowId(int rowId)
     }
 
     currentTraceState->rowId = rowId;
+
+    if (currentTraceState->readOp != NULL)
+    {
+        currentTraceState->readOp->objectId = currentTraceState->rowId;
+    }
+
+    if (currentTraceState->writeOp != NULL)
+    {
+        currentTraceState->writeOp->objectId = currentTraceState->rowId;
+    }
 }
 
 void interceptWrite(VdbeOp *pOp, int recordId, char* val)

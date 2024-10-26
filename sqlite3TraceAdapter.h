@@ -34,7 +34,7 @@ int isRowId(u8 opCode);
  * While `column` does not tell which record is being read, we can
  * maintain the cursor state and know the recordId from other instruction.
  */
-void sqlite3TraceInterceptor(VdbeOp *pOp);
+void sqlite3TraceInterceptor(VdbeOp *pOp, int pc);
 
 
 /**
@@ -62,6 +62,12 @@ void interceptWrite(VdbeOp *pOp, int recordId, char* val);
 
 // Enables trace output to stdout.
 void enableTraceOutput();
+
+/**
+ * Enable per-statement mode. This mode assumes that a transaction starts with
+ * its first seen operation and commits with `halt`.
+ */
+void setStatementMode(int mode);
 
 #ifdef __cplusplus
 }

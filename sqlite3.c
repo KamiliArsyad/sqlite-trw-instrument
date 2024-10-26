@@ -86985,7 +86985,7 @@ SQLITE_PRIVATE void sqlite3VdbePrintImptOp(FILE *pOut, int pc, VdbeOp *pOp){
   dummyDb.mallocFailed = 1;
   zP4 = sqlite3VdbeDisplayP4(&dummyDb, pOp);
   zCom = 0;
-  sqlite3TraceInterceptor(pOp);
+  sqlite3TraceInterceptor(pOp, pc);
 
   // Filters the non-important instructions
   char* imptInsts[] = {"Transaction", "AutoCommit", "TableLock", "OpenWrite", "OpenRead", "Halt"};
