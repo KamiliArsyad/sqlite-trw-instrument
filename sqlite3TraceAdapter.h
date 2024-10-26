@@ -63,6 +63,9 @@ void interceptWrite(VdbeOp *pOp, int recordId, char* val);
 // Enables trace output to stdout.
 void enableTraceOutput();
 
+// Disables trace output
+void disableTraceOutput();
+
 /**
  * Enable per-statement mode. This mode assumes that a transaction starts with
  * its first seen operation and commits with `halt`.

@@ -309,6 +309,8 @@ int main(int argc, char **argv){
     pthread_join(aWorker[i], 0);
   }
 
+  disableTraceOutput();
+
   for(i=0; i<nWorker; i++){
     q = prepare(db, "MAIN", __LINE__,
           "SELECT group_concat(tid,',') FROM task WHERE doneby=%Q",

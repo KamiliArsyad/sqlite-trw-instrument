@@ -142,6 +142,11 @@ void enableTraceOutput()
     traceFile = stdout;
 }
 
+void disableTraceOutput()
+{
+    traceFile = NULL;
+}
+
 void setStatementMode(int mode)
 {
     isStatementMode = mode != 0;
