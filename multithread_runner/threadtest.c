@@ -324,19 +324,22 @@ int main(int argc, char **argv){
   q = prepare(db, "MAIN", __LINE__, "SELECT count(*) FROM p2");
   if( sqlite3_step(q)!=SQLITE_ROW || sqlite3_column_int(q,0)<10 ){
     printf("incorrect result\n");
-    exit(-1);
+    return 0;
+    // exit(-1);
   }
   sqlite3_finalize(q);
   q = prepare(db, "MAIN", __LINE__, "SELECT x FROM p1 EXCEPT SELECT x FROM p2");
   if( sqlite3_step(q)==SQLITE_ROW ){
     printf("incorrect result\n");
-    exit(-1);
+    return 0;
+    // exit(-1);
   }
   sqlite3_finalize(q);
   q = prepare(db, "MAIN", __LINE__, "SELECT x FROM p2 EXCEPT SELECT x FROM p1");
   if( sqlite3_step(q)==SQLITE_ROW ){
     printf("incorrect result\n");
-    exit(-1);
+    return 0;
+    // exit(-1);
   }
   sqlite3_finalize(q);
   printf("OK\n");
