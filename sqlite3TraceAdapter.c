@@ -73,12 +73,13 @@ void freeTraceState(TraceState *traceState)
     free(traceState);
 }
 
-// ------------------------------------------
-// ---- Actual Interceptor Implementation ---
-// ------------------------------------------
+// -------------------------------------------
+// ---- Actual Interceptor Implementation ----
+// -------------------------------------------
 
 __thread TraceState *currentTraceState = NULL;
 __thread int isStatementMode = 0;
+__thread int hasStarted = 0;
 FILE *traceFile = NULL;
 
 void sqlite3TraceInterceptor(VdbeOp *pOp, int pc)
@@ -127,12 +128,14 @@ void sqlite3TraceInterceptor(VdbeOp *pOp, int pc)
     {
         // If first time seen, begin transaction
         // If Halt: Commit transaction.
-        if (checkVdbeOp(pOp, isHaltOp))
+        if (checkVdbeOp(pOp, isHaltOp) && hasStarted)
         {
             printTransactionOp(trackEnd(getThreadId()), traceFile);
-        } else if (pc == 0)
+            hasStarted = 0;
+        } else if (pc == 0 && !hasStarted)
         {
             printTransactionOp(trackBegin(getThreadId()), traceFile);
+            hasStarted = 1;
         }
     }
 }

@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <sys/types.h>
 #include "sqlite3TraceAdapter.h"
 
 /* Name of the in-memory database */
@@ -151,6 +152,7 @@ static void *worker(void *pArg){
   int rc;
   const char *zName = (const char*)pArg;
   sqlite3 *db = 0;
+  setThreadId(gettid());
 
   if( eVerbose ){
     printf("%s: startup\n", zName);
@@ -172,7 +174,6 @@ static void *worker(void *pArg){
     );
     if( sqlite3_step(q1)==SQLITE_ROW ){
       tid = sqlite3_column_int(q1,0);
-        setThreadId(tid);
     }
     sqlite3_finalize(q1);
     if( tid<0 ) break;

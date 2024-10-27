@@ -20,3 +20,4 @@ add_executable(threadtest threadtest.c ${CMAKE_SOURCE_DIR}/sqlite3.c
 add_definitions(-DSQLITE_DEBUG -DSQLITE_TRW_INSTRUMENT)
 
 target_link_libraries(full_runner Threads::Threads pthread dl)
+target_link_libraries(threadtest Threads::Threads pthread dl)

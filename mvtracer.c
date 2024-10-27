@@ -110,7 +110,7 @@ void printTransactionOp(TransactionOp* transactionOp, FILE* pOut)
         break;
     }
 
-    static const char *baseFormat = "\n$$Op: %s\t Tx: %d";
+    static const char *baseFormat = "\n$_$_$Op: %s\t Tx: %d";
     static const char *objFormat = "\t Obj: %d";
     static const char *writeFormat = " \t wVal: %s";
 
@@ -130,7 +130,7 @@ void printTransactionOp(TransactionOp* transactionOp, FILE* pOut)
     }
 
     // Finally, add the newline and write to output
-    snprintf(formattedStr + offset, sizeof(formattedStr) - offset, "$$\n");
+    snprintf(formattedStr + offset, sizeof(formattedStr) - offset, "$_$_$\n");
     fprintf(pOut, "%s", formattedStr);
 
     destroyTransactionOp(transactionOp);
