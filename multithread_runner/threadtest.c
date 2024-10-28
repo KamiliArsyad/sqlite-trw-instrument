@@ -290,6 +290,7 @@ int main(int argc, char **argv){
   error_out(rc, "sqlite3_exec", __LINE__);
 
   enableTraceOutput();
+  setStatementMode(1);
   exec(db, "MAIN", __LINE__,
        "CREATE TABLE IF NOT EXISTS p1(x INTEGER PRIMARY KEY);");
   // Mark task 1 as done
