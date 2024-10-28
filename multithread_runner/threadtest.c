@@ -181,11 +181,7 @@ static void *worker(void *pArg){
       printf("%s: starting task %d\n", zName, tid);
       fflush(stdout);
     }
-    if( tid==1 ){
-      exec(db, zName, __LINE__,
-         "CREATE TABLE IF NOT EXISTS p1(x INTEGER PRIMARY KEY);"
-      );
-    }else if( tid>=2 && tid<=51 ){
+    if( tid>=2 && tid<=51 ){
       int a, b, i;
       waitOnTable(db, zName, "p1");
       a = (tid-2)*200 + 1;
@@ -196,13 +192,6 @@ static void *worker(void *pArg){
               "INSERT INTO p1(x) VALUES(%d)", i);
         }
       }
-    }else if( tid==52 ){
-      exec(db, zName, __LINE__,
-         "CREATE TABLE IF NOT EXISTS p2(x INTEGER PRIMARY KEY);"
-         "WITH RECURSIVE"
-         "  c(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM c WHERE x<10000)"
-         "INSERT INTO p2(x) SELECT x FROM c;"
-      );
     }else if( tid>=53 && tid<=62 ){
       int a, b, i;
       waitOnTable(db, zName, "p2");
@@ -300,7 +289,22 @@ int main(int argc, char **argv){
   );
   error_out(rc, "sqlite3_exec", __LINE__);
 
-    enableTraceOutput();
+  enableTraceOutput();
+  exec(db, "MAIN", __LINE__,
+       "CREATE TABLE IF NOT EXISTS p1(x INTEGER PRIMARY KEY);");
+  // Mark task 1 as done
+  exec(db, "MAIN", __LINE__, "UPDATE task SET doneby='MAIN' WHERE tid=1;");
+
+  // Execute task 52
+  exec(db, "MAIN", __LINE__,
+       "CREATE TABLE IF NOT EXISTS p2(x INTEGER PRIMARY KEY);"
+       "WITH RECURSIVE"
+       "  c(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM c WHERE x<10000)"
+       "INSERT INTO p2(x) SELECT x FROM c;"
+  );
+  // Mark task 52 as done
+  exec(db, "MAIN", __LINE__, "UPDATE task SET doneby='MAIN' WHERE tid=52;");
+
   for(i=0; i<nWorker; i++){
     sqlite3_snprintf(sizeof(aWorkerName[i]), aWorkerName[i],
              "W%02d", i);
