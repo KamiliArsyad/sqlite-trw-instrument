@@ -142748,7 +142748,7 @@ static int sqlite3LockAndPrepare(
     /* Make multiple attempts to compile the SQL, until it either succeeds
     ** or encounters a permanent error.  A schema problem after one schema
     ** reset is considered a permanent error. */
-    printf(zSql);
+    printf("Thread %d: %s", getThreadId(), zSql);
     printf("\n");
     rc = sqlite3Prepare(db, zSql, nBytes, prepFlags, pOld, ppStmt, pzTail);
     assert( rc==SQLITE_OK || *ppStmt==0 );
