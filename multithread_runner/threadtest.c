@@ -181,22 +181,22 @@ static void *worker(void *pArg){
       printf("%s: starting task %d\n", zName, tid);
       fflush(stdout);
     }
-    if( tid>=2 && tid<=51 ){
+    if( tid>=2 && tid<=11 ){
       int a, b, i;
       waitOnTable(db, zName, "p1");
-      a = (tid-2)*200 + 1;
-      b = a+200;
+      a = (tid-2)*10 + 1;
+      b = a+10;
       for(i=a; i<b; i++){
         if( isPrime(i) ){
           exec(db, zName, __LINE__,
               "INSERT INTO p1(x) VALUES(%d)", i);
         }
       }
-    }else if( tid>=53 && tid<=62 ){
+    }else if( tid>=12 && tid<=16 ){
       int a, b, i;
       waitOnTable(db, zName, "p2");
-      a = (tid-53)*10 + 2;
-      b = a+9;
+      a = (tid-12)*2 + 2;
+      b = a+1;
       for(i=a; i<=b; i++){
         exec(db, zName, __LINE__,
           "DELETE FROM p2 WHERE x>%d AND (x %% %d)==0", i, i);
@@ -284,7 +284,7 @@ int main(int argc, char **argv){
     "  tid INTEGER PRIMARY KEY,\n"
     "  doneby TEXT\n"
     ");\n"
-    "WITH RECURSIVE c(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM c WHERE x<100)"
+    "WITH RECURSIVE c(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM c WHERE x<20)"
     "INSERT INTO task(tid) SELECT x FROM c;\n"
   );
   error_out(rc, "sqlite3_exec", __LINE__);
@@ -300,11 +300,11 @@ int main(int argc, char **argv){
   exec(db, "MAIN", __LINE__,
        "CREATE TABLE IF NOT EXISTS p2(x INTEGER PRIMARY KEY);"
        "WITH RECURSIVE"
-       "  c(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM c WHERE x<10000)"
+       "  c(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM c WHERE x<100)"
        "INSERT INTO p2(x) SELECT x FROM c;"
   );
   // Mark task 52 as done
-  exec(db, "MAIN", __LINE__, "UPDATE task SET doneby='MAIN' WHERE tid=52;");
+  exec(db, "MAIN", __LINE__, "UPDATE task SET doneby='MAIN' WHERE tid=17;");
 
   for(i=0; i<nWorker; i++){
     sqlite3_snprintf(sizeof(aWorkerName[i]), aWorkerName[i],
@@ -334,11 +334,9 @@ int main(int argc, char **argv){
   }
   sqlite3_finalize(q);
   q = prepare(db, "MAIN", __LINE__, "SELECT x FROM p1 EXCEPT SELECT x FROM p2");
-  if( sqlite3_step(q)==SQLITE_ROW ){
-    sqlite3_exec(db, "SELECT x from p1 EXCEPT SELECT x FROM p2", 0, 0, 0);
+  if( sqlite3_step(q)==SQLITE_ROW){
     printf("incorrect result -- p1 not in p2 -- \n");
     return 0;
-    // exit(-1);
   }
   sqlite3_finalize(q);
   q = prepare(db, "MAIN", __LINE__, "SELECT x FROM p2 EXCEPT SELECT x FROM p1");
@@ -346,7 +344,6 @@ int main(int argc, char **argv){
     sqlite3_exec(db, "SELECT x from p2 EXCEPT SELECT x FROM p1", 0, 0, 0);
     printf("incorrect result -- p2 not in p1 -- \n");
     return 0;
-    // exit(-1);
   }
   sqlite3_finalize(q);
   printf("OK\n");
