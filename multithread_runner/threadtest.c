@@ -184,7 +184,7 @@ static void *worker(void *pArg){
     if( tid>=2 && tid<=11 ){
       int a, b, i;
       waitOnTable(db, zName, "p1");
-      a = (tid-2)*10 + 1;
+      a = (tid-2)*10 + 1 + 100;
       b = a+10;
       for(i=a; i<b; i++){
         if( isPrime(i) ){
@@ -196,7 +196,7 @@ static void *worker(void *pArg){
       int a, b, i;
       waitOnTable(db, zName, "p2");
       a = (tid-12)*2 + 2;
-      b = a+1;
+      b = a+4;
       for(i=a; i<=b; i++){
         exec(db, zName, __LINE__,
           "DELETE FROM p2 WHERE x>%d AND (x %% %d)==0", i, i);
@@ -300,7 +300,7 @@ int main(int argc, char **argv){
   exec(db, "MAIN", __LINE__,
        "CREATE TABLE IF NOT EXISTS p2(x INTEGER PRIMARY KEY);"
        "WITH RECURSIVE"
-       "  c(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM c WHERE x<100)"
+       "  c(x) AS (VALUES(100) UNION ALL SELECT x+1 FROM c WHERE x<200)"
        "INSERT INTO p2(x) SELECT x FROM c;"
   );
   // Mark task 52 as done
