@@ -328,21 +328,23 @@ int main(int argc, char **argv){
   }
   q = prepare(db, "MAIN", __LINE__, "SELECT count(*) FROM p2");
   if( sqlite3_step(q)!=SQLITE_ROW || sqlite3_column_int(q,0)<10 ){
-    printf("incorrect result\n");
+    printf("incorrect result -- All data in p2 deleted --\n");
     return 0;
     // exit(-1);
   }
   sqlite3_finalize(q);
   q = prepare(db, "MAIN", __LINE__, "SELECT x FROM p1 EXCEPT SELECT x FROM p2");
   if( sqlite3_step(q)==SQLITE_ROW ){
-    printf("incorrect result\n");
+    sqlite3_exec(db, "SELECT x from p1 EXCEPT SELECT x FROM p2", 0, 0, 0);
+    printf("incorrect result -- p1 not in p2 -- \n");
     return 0;
     // exit(-1);
   }
   sqlite3_finalize(q);
   q = prepare(db, "MAIN", __LINE__, "SELECT x FROM p2 EXCEPT SELECT x FROM p1");
   if( sqlite3_step(q)==SQLITE_ROW ){
-    printf("incorrect result\n");
+    sqlite3_exec(db, "SELECT x from p2 EXCEPT SELECT x FROM p1", 0, 0, 0);
+    printf("incorrect result -- p2 not in p1 -- \n");
     return 0;
     // exit(-1);
   }
