@@ -128,6 +128,7 @@ void sqlite3TraceInterceptor(VdbeOp *pOp, int pc)
     {
         // If first time seen, begin transaction
         // If Halt: Commit transaction.
+        // TODO: Catch non-halting expressions.
         if (checkVdbeOp(pOp, isHaltOp) && hasStarted)
         {
             printTransactionOp(trackEnd(getThreadId()), traceFile);

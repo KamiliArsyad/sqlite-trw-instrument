@@ -164,6 +164,8 @@ static void *worker(void *pArg){
   sqlite3_busy_timeout(db, 2000);
   setStatementMode(1);
 
+  exec(db, zName, __LINE__, "PRAGMA vdbe_trace = ON;");
+
   while( 1 ){
     sqlite3_stmt *q1;
     int tid = -1;
@@ -236,7 +238,7 @@ static void usage(const char *argv0){
 */
 int main(int argc, char **argv){
   int i;
-  int nWorker = 4;
+  int nWorker = 1;//4;
   int rc;
   sqlite3 *db = 0;
   sqlite3_stmt *q;
@@ -289,8 +291,6 @@ int main(int argc, char **argv){
   );
   error_out(rc, "sqlite3_exec", __LINE__);
 
-  enableTraceOutput();
-  setStatementMode(1);
   exec(db, "MAIN", __LINE__,
        "CREATE TABLE IF NOT EXISTS p1(x INTEGER PRIMARY KEY);");
   // Mark task 1 as done
@@ -305,6 +305,10 @@ int main(int argc, char **argv){
   );
   // Mark task 52 as done
   exec(db, "MAIN", __LINE__, "UPDATE task SET doneby='MAIN' WHERE tid=17;");
+  exec(db, "MAIN", __LINE__, "PRAGMA vdbe_trace = ON;");
+
+  enableTraceOutput();
+  setStatementMode(1);
 
   for(i=0; i<nWorker; i++){
     sqlite3_snprintf(sizeof(aWorkerName[i]), aWorkerName[i],
