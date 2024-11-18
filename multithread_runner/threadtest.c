@@ -164,7 +164,7 @@ static void *worker(void *pArg){
   sqlite3_busy_timeout(db, 2000);
   setStatementMode(1);
 
-  // exec(db, zName, __LINE__, "PRAGMA vdbe_trace = ON;");
+  exec(db, zName, __LINE__, "PRAGMA vdbe_trace = ON;");
 
   while( 1 ){
     sqlite3_stmt *q1;
@@ -305,7 +305,6 @@ int main(int argc, char **argv){
   );
   // Mark task 52 as done
   exec(db, "MAIN", __LINE__, "UPDATE task SET doneby='MAIN' WHERE tid=17;");
-  // exec(db, "MAIN", __LINE__, "PRAGMA vdbe_trace = ON;");
 
   enableTraceOutput();
   setStatementMode(1);
