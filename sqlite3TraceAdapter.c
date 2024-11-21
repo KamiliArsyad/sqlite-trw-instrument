@@ -4,6 +4,7 @@
 
 #define COLUMN_OP_NAME "Column"
 #define ROW_ID_OP_NAME "Rowid"
+#define RESULT_ROW_OP_NAME "ResultRow"
 #define AUTOCOMMIT_OP_NAME "AutoCommit"
 #define HALT_OP_NAME "Halt"
 
@@ -49,6 +50,11 @@ int isAutocommitOp(u8 opCode)
 int isHaltOp(u8 opCode)
 {
     return strcmp(sqlite3OpcodeName(opCode), HALT_OP_NAME) == 0;
+}
+
+int isResultRowOp(u8 opCode)
+{
+    return strcmp(sqlite3OpcodeName(opCode), RESULT_ROW_OP_NAME) == 0;
 }
 
 int checkVdbeOp(VdbeOp *op, vdbeOpCheckPredicate predicate)
@@ -129,7 +135,7 @@ void sqlite3TraceInterceptor(VdbeOp *pOp, int pc)
         // If first time seen, begin transaction
         // If Halt: Commit transaction.
         // TODO: Catch non-halting expressions.
-        if (checkVdbeOp(pOp, isHaltOp) && hasStarted)
+        if ((checkVdbeOp(pOp, isHaltOp) || checkVdbeOp(pOp, isResultRowOp)) && hasStarted)
         {
             printTransactionOp(trackEnd(getThreadId()), traceFile);
             hasStarted = 0;

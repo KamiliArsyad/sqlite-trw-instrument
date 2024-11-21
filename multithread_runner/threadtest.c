@@ -349,8 +349,7 @@ int main(int argc, char **argv){
     return 0;
   }
   sqlite3_finalize(q);
-  printf("OK\n");
-
   sqlite3_close(db);
+  printf("OK\n");
   return 0;
 }
