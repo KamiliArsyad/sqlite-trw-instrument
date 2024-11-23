@@ -164,7 +164,7 @@ static void *worker(void *pArg){
   sqlite3_busy_timeout(db, 2000);
 
   exec(db, zName, __LINE__, "PRAGMA vdbe_trace = ON;");
-  setStatementMode(1);
+  setStatementMode(0);
 
   while( 1 ){
     sqlite3_stmt *q1;
@@ -174,9 +174,11 @@ static void *worker(void *pArg){
             " WHERE tid=(SELECT tid FROM task WHERE doneby IS NULL LIMIT 1)"
             "RETURNING tid", zName
     );
+    exec(db, zName, __LINE__, "BEGIN TRANSACTION");
     if( sqlite3_step(q1)==SQLITE_ROW ){
       tid = sqlite3_column_int(q1,0);
     }
+    exec(db, zName, __LINE__, "COMMIT");
     sqlite3_finalize(q1);
     if( tid<0 ) break;
     if( eVerbose ){
@@ -188,21 +190,25 @@ static void *worker(void *pArg){
       waitOnTable(db, zName, "p1");
       a = (tid-2)*10 + 1 + 100;
       b = a+10;
+      exec(db, zName, __LINE__, "BEGIN TRANSACTION");
       for(i=a; i<b; i++){
         if( isPrime(i) ){
           exec(db, zName, __LINE__,
               "INSERT INTO p1(x) VALUES(%d)", i);
         }
       }
+      exec(db, zName, __LINE__, "COMMIT");
     }else if( tid>=12 && tid<=16 ){
       int a, b, i;
       waitOnTable(db, zName, "p2");
       a = (tid-12)*2 + 2;
       b = a+4;
+      exec(db, zName, __LINE__, "BEGIN TRANSACTION");
       for(i=a; i<=b; i++){
         exec(db, zName, __LINE__,
           "DELETE FROM p2 WHERE x>%d AND (x %% %d)==0", i, i);
       }
+      exec(db, zName, __LINE__, "COMMIT");
     }
     if( eVerbose ){
       printf("%s: completed task %d\n", zName, tid);
@@ -307,7 +313,7 @@ int main(int argc, char **argv){
   exec(db, "MAIN", __LINE__, "UPDATE task SET doneby='MAIN' WHERE tid=17;");
 
   enableTraceOutput();
-  setStatementMode(1);
+  setStatementMode(0);
 
   for(i=0; i<nWorker; i++){
     sqlite3_snprintf(sizeof(aWorkerName[i]), aWorkerName[i],
