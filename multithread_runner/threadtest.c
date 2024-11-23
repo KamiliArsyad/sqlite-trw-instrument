@@ -175,6 +175,7 @@ static void *worker(void *pArg){
             " WHERE tid=(SELECT tid FROM task WHERE doneby IS NULL LIMIT 1)"
             "RETURNING tid", zName
     );
+    exec(db, zName, __LINE__, "COMMIT");
     if( sqlite3_step(q1)==SQLITE_ROW ){
       tid = sqlite3_column_int(q1,0);
     }
@@ -189,6 +190,7 @@ static void *worker(void *pArg){
       waitOnTable(db, zName, "p1");
       a = (tid-2)*10 + 1 + 100;
       b = a+10;
+      exec(db, zName, __LINE__, "BEGIN TRANSACTION");
       for(i=a; i<b; i++){
         if( isPrime(i) ){
           exec(db, zName, __LINE__,
@@ -201,6 +203,7 @@ static void *worker(void *pArg){
       waitOnTable(db, zName, "p2");
       a = (tid-12)*2 + 2;
       b = a+4;
+      exec(db, zName, __LINE__, "BEGIN TRANSACTION");
       for(i=a; i<=b; i++){
         exec(db, zName, __LINE__,
           "DELETE FROM p2 WHERE x>%d AND (x %% %d)==0", i, i);
