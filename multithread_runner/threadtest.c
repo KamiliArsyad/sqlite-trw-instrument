@@ -152,7 +152,7 @@ static void *worker(void *pArg){
   int rc;
   const char *zName = (const char*)pArg;
   sqlite3 *db = 0;
-  setThreadId(gettid());
+  setThreadId(strtol(zName+1, NULL, 10));
 
   if( eVerbose ){
     printf("%s: startup\n", zName);
